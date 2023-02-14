@@ -10,14 +10,14 @@ export class DbService {
     return (JSON.parse(await readFile(pathFile, 'utf-8')) as { data: TypeData[] }).data
   }
 
-  async findNews(search: string) {
+  async findNews(search?: string) {
     const datas = await this.getAllData()
-    return datas.filter(el => el.title.includes(search))
+    if (!search) return datas
+    else return datas.filter(el => el.title.toLowerCase().includes(`${search}`.toLowerCase().trim()))
   }
 
   async getById(id: string) {
     const data = await this.getAllData()
-    console.log(Array.isArray(data) )
     return data.find(el => `${el.id}` === id) || null
   }
 }

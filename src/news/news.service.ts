@@ -21,30 +21,39 @@ export class NewsService {
     if (data.length) return data
   }
 
-  async sortNews(data: TypeData[], sort?: string, limit?: number) {
+   private sortOfTags(data: TypeData[], tags: string) {
+    const dataTags: string[] = tags.split(',').map(el => el.trim())
+    return data.filter(news => dataTags.includes(news.tag_article))
+  }
+
+  private sortNews(data: TypeData[], sort?: string) {
     switch (sort) {
       case 'asc': {
-        const sortData = data.sort((a, b) => a.publication_date > b.publication_date ? 1 : -1)
-         return limit ? sortData.splice(0, limit) : sortData
+        return  data.sort((a, b) => a.publication_date > b.publication_date ? 1 : -1)
       }
       case 'desc': {
-        const sortData = data.sort((a, b) => a.publication_date > b.publication_date ? -1 : 1)
-        return limit ? sortData.splice(0, limit) : sortData
+        return data.sort((a, b) => a.publication_date > b.publication_date ? -1 : 1)
       }
       default: {
-        return limit ? data.splice(0, limit) : data
+        return data
       }
     }
   }
 
-  async getNews(search: string, sort?: string, limit?: number): Promise<TypeData[]> {
+  private countPages(data: TypeData[], limit = 10, page = 1) {
+    const start = (page - 1) * limit
+    const end = start + limit
 
-    if (search) {
-      const data = await this.findNews(search)
-      return this.sortNews(data, sort, limit)
-    } else {
-      const data = await this.dbService.getAllData()
-      return this.sortNews(data, sort, limit)
+    return {
+      allPages: Math.round(data.length / limit),
+      page: page,
+      data: data.slice(start, end),
     }
+  }
+
+  async getNews(search: string, tags?: string, sort?: string, limit?: number, page?: number) {
+    let data = await this.findNews(search)
+    if (tags) data = this.sortOfTags(data, tags)
+    return this.countPages(this.sortNews(data, sort), limit, page)
   }
 }

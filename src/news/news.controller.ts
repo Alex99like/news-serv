@@ -7,12 +7,12 @@ export class NewsController {
 
   @Get()
   async getNews(@Query() query: Record<string, string>) {
-    const { search, sort, limit } = query
-    return this.newsService.getNews(search, sort, +limit)
+    const { search, sort, tags, limit = 10, page = 1 } = query
+    return this.newsService.getNews(search, tags, sort, +limit, +page)
   }
 
   @Get(':id')
   async getById(@Param('id') id: string) {
-    return this.newsService.getById(id)
+   return this.newsService.getById(id)
   }
 }
